@@ -9,7 +9,7 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-from models import Book
+from models import Book, User
 
 @app.route("/")
 def hello():
@@ -26,16 +26,32 @@ def get_book_details():
     published=request.args.get('published')
     return "Author : {}, Published: {}".format(author,published)
 
-@app.route("/getall")
-def get_all():
+@app.route("/getallusers")
+def get_all_users():
+    try:
+        users=User.query.all()
+        return jsonify([e.serialize() for e in users])
+    except Exception as e:
+        return(str(e))
+
+@app.route("/get/user/<id_>")
+def get_user_by_id(id_):
+    try:
+        user=User.query.filter_by(id=id_).first()
+        return jsonify(user.serialize())
+    except Exception as e:
+        return(str(e))
+
+@app.route("/getallbooks")
+def get_all_books():
     try:
         books=Book.query.all()
         return jsonify([e.serialize() for e in books])
     except Exception as e:
         return(str(e))
 
-@app.route("/get/<id_>")
-def get_by_id(id_):
+@app.route("/get/book/<id_>")
+def get_book_by_id(id_):
     try:
         book=Book.query.filter_by(id=id_).first()
         return jsonify(book.serialize())
@@ -59,7 +75,26 @@ def add_book_form():
             return "Book added. book id={}".format(book.id)
         except Exception as e:
             return(str(e))
-    return render_template("getdata.html")
+    return render_template("newbookform.html")
+
+@app.route("/sign_up", methods=['GET', 'POST'])
+def add_user_form():
+    if request.method == 'POST':
+        username=request.form.get('username')
+        email=request.form.get('email')
+        password=request.form.get('password')
+        try:
+            user=User(
+                username=username,
+                email=email,
+                password=password
+            )
+            db.session.add(user)
+            db.session.commit()
+            return "a new user has been signed up. user email={}".format(user.email)
+        except Exception as e:
+            return(str(e))
+    return render_template("newuserform.html")
 
 if __name__ == '__main__':
     app.run()
