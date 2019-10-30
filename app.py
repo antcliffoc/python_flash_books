@@ -1,8 +1,10 @@
 import os
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 
 #setting app.config
 app.config.from_object(os.environ['APP_SETTINGS'])
@@ -13,7 +15,7 @@ from models import Book, User
 
 @app.route("/")
 def hello():
-    return "Hello World!"
+    return "hello world!"
 
 # Example's of information flow with routes
 @app.route("/name/<name>")
